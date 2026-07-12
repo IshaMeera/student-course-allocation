@@ -34,12 +34,12 @@ export default function ReportsPage() {
     );
  }
 
- const categoryData = Object.entries(report.categorySummary).map(
-    ([category, students]) => ({
-        category,
-        students,
-    })
- );
+ const categoryData = Object.entries(
+    report.categorySummary as Record<string, number>
+    ).map(([category, students]) => ({
+    category,
+    students,
+ }));
 
   return (
     <div className="space-y-8">
@@ -147,9 +147,7 @@ export default function ReportsPage() {
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                label={({ category, students }) =>
-                `${category}: ${students}`
-                }
+                label={(props: any)=>`${props.payload.category}: ${props.payload.students}`}
             />
 
             <Tooltip />
