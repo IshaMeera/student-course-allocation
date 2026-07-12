@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import StatCard from "@/components/dashboard/StatCard";
 import { getDashboardData } from "@/services/dashboardApi";
 import { Users, GraduationCap, BookOpen, CircleCheckBig } from "lucide-react";
