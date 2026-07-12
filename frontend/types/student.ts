@@ -25,7 +25,7 @@ export interface Student {
 }
 
 export interface StudentPayload {
-  studentId: string;
+  studentId?: string;
   name: string;
   marks: number;
   category: "GENERAL" | "OBC" | "SC" | "ST";

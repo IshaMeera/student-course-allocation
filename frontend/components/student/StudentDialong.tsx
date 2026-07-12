@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { createStudent, updateStudent } from "@/services/studentApi";
+import axios from "axios";
 
 interface Props {
   open: boolean;
@@ -18,6 +18,15 @@ interface Props {
   onSuccess:() => void;
 }
 
+type Category = "GENERAL" | "OBC" | "SC" | "ST";
+
+type StudentFormData = {
+  name: string;
+  marks: string;
+  category: Category;
+  preferences: string[];
+};
+
 export default function StudentDialog({
   open,
   onOpenChange,
@@ -25,7 +34,7 @@ export default function StudentDialog({
   onSuccess
 }: Props) {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StudentFormData>({
     name: "",
     marks: "",
     category: "GENERAL",
@@ -95,7 +104,14 @@ export default function StudentDialog({
 
     <Select
         value={formData.preferences[index]}
-        onValueChange={(value) => handlePreferenceChange(index, value)}
+        onValueChange={(value) => {
+          if (value !== null) {
+            setFormData((prev) => ({
+              ...prev,
+              category: value as Category,
+            }));
+          }
+        }}
     >
         <SelectTrigger>
         <SelectValue>
@@ -144,8 +160,13 @@ export default function StudentDialog({
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      console.log(error.response?.data);
-      console.log(error.response?.status);
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data);
+        console.log(error.response?.status);
+      } else {
+        console.error(error);
+      }
+
       alert("Something went wrong.");
     }
   };
@@ -184,7 +205,11 @@ export default function StudentDialog({
 
           <Select
             value={formData.category}
-            onValueChange={(value) => handleChange("category", value)}
+            onValueChange={(value) => {
+            if (value !== null) {
+              handleChange("category", value);
+            }
+          }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select Category" />
