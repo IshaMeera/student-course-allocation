@@ -1,36 +1,278 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI-Powered Student Course Allocation System
 
-## Getting Started
+A full-stack university course allocation system that automatically assigns students to courses based on marks, category-based reservation, course preferences, and application date.
 
-First, run the development server:
+The system also includes reporting dashboards and an AI assistant for querying allocation insights.
+
+## Tech Stack
+
+### Frontend
+- Next.js
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Recharts
+- Axios
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+
+### AI
+- Google Gemini API
+
+---
+
+## Features
+
+- Student management
+- Course and seat management
+- Category-wise reserved seats
+- Automated course allocation
+- Preference-based course assignment
+- Allocation recalculation
+- Dashboard with charts and statistics
+- Allocation reports and rejection analysis
+- AI assistant for report-based questions
+
+---
+
+## Project Structure
+
+```text
+frontend/
+├── app/
+├── components/
+├── services/
+└── types/
+
+backend/
+├── controller/
+├── models/
+├── routes/
+├── services/
+└── config/
+```
+
+---
+
+## Setup Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+```
+
+### 2. Backend Setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+GEMINI_API_KEY=your_gemini_api_key
+PORT=5000
+```
+
+Run the backend:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Frontend Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd frontend
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Configure the backend API URL in the frontend environment file.
 
-## Learn More
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run the frontend:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open:
 
-## Deploy on Vercel
+```text
+http://localhost:3000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Database Schema
+
+### Student
+
+```text
+studentId
+name
+marks
+category
+preferences[]
+allocatedCourse
+allocatedPreference
+allocatedStatus
+applicationDate
+allocatedDate
+```
+
+### Course
+
+```text
+courseName
+totalSeats
+reservedSeats
+  ├── GENERAL
+  ├── OBC
+  ├── SC
+  └── ST
+
+filledSeats
+  ├── GENERAL
+  ├── OBC
+  ├── SC
+  └── ST
+```
+
+MongoDB references are used between students and courses for preferences and allocated courses.
+
+---
+
+## API Documentation
+
+### Students
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/students` | Get all students |
+| GET | `/api/students/:id` | Get student |
+| POST | `/api/students` | Create student |
+| PUT | `/api/students/:id` | Update student |
+| DELETE | `/api/students/:id` | Delete student |
+
+### Courses
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/courses` | Get all courses |
+| POST | `/api/courses` | Create course |
+| PUT | `/api/courses/:id` | Update course |
+| DELETE | `/api/courses/:id` | Delete course |
+
+### Allocation
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/allocation/recalculate` | Run allocation process |
+
+### Reports and Dashboard
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/dashboard` | Dashboard statistics |
+| GET | `/api/reports` | Allocation reports |
+
+### AI Assistant
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/ai/query` | Ask questions about allocation reports |
+
+Example:
+
+```json
+{
+  "question": "Which students did not receive their first preference?"
+}
+```
+
+---
+
+## Architecture Design
+
+The application follows a layered architecture:
+
+```text
+Next.js Frontend
+        ↓
+Express REST API
+        ↓
+Service / Business Logic
+        ↓
+Mongoose Models
+        ↓
+MongoDB Atlas
+```
+
+Allocation and reporting logic are separated into service modules to keep controllers lightweight and improve maintainability.
+
+---
+
+## AI Integration Approach
+
+The Gemini API is used as a report-aware AI assistant.
+
+The backend generates the latest allocation report and provides it to the AI model as context.
+
+The AI is instructed to:
+
+- Answer only from report data.
+- Avoid inventing information.
+- Return a fallback response when sufficient data is unavailable.
+- Keep answers concise.
+
+This grounding approach reduces hallucination and keeps AI responses relevant to the allocation system.
+
+---
+
+## Security Considerations
+
+- Environment variables are used for database and AI credentials.
+- `.env` files are excluded from source control.
+- Backend validation is applied before storing data.
+- AI API credentials remain on the backend.
+- AI responses are restricted to provided report context.
+
+---
+
+## Challenges and Solutions
+
+### Student ID conflicts after deletion
+
+Using document count to generate student IDs caused duplicate IDs after records were deleted.
+
+**Solution:** The highest existing student ID is identified and incremented.
+
+### Duplicate course preferences
+
+Students could select the same course multiple times.
+
+**Solution:** Duplicate preferences are prevented in the frontend.
+
+### Allocation visibility
+
+A success message alone did not clearly show allocation results.
+
+**Solution:** Allocation summary cards and allocated/unallocated student lists were added.
+
+### AI hallucination risk
+
+General AI responses could provide unrelated information.
+
+**Solution:** The AI is grounded using generated report data and instructed to answer only from the supplied context.
+
